@@ -1,86 +1,85 @@
 #include <iostream>
 #include <math.h>
-#include <iterator>
 
 using namespace std;
 
 struct Node
+// a node on the graph
 {
-    int x;
-    int y;
+    int x; // x coordinate of the node
+    int y; // y coordinate of the node
 };
 
 int distance(Node node_1, Node node_2)
+// calulcate the distance between two nodes via the distacne formula
 {
-    return sqrt(pow((node_1.x - node_2.x), 2) + pow((node_1.y - node_2.y), 2));
-}
-
-int get_min(int array[])
-{
-    int min = 0;
-    int len = array.size();
-
-    for (int i = 1; i < len; i++)
-    {
-        if (array[0] > array[i])
-        {
-            min = i;
-        }
-    }
-    
-    return min;
+    return round(sqrt(pow((node_2.x - node_1.x), 2) +
+                 pow((node_2.y - node_1.y), 2)));
 }
 
 int main()
 {
+    // open and read data from a file
     FILE *graph_data;
     graph_data = fopen("graph.txt", "r");
 
     int graph_num;
     fscanf(graph_data, "%i", &graph_num);
     
-    for (int i = 0; i <= graph_num ; i++)
+    // iterate over each graph in the data set
+    for (int i = 0; i < graph_num ; i++)
     {
-       int node_num;
-       fscanf(graph_data, "%i", &node_num);
+        int node_num;
+        fscanf(graph_data, "%i", &node_num);
 
-       cout << "Graph: " << i << endl;
+        cout << "Graph: " << i + 1 << endl;
 
-        struct Node node_list[node_num];
-        for (int i = 0; i < node_num; i++)
+        int node_array[node_num][node_num]; // weight of all node connections in the graph
+        struct Node node_list[node_num]; // list of all nodes in the graph
+
+        // iterate over each node in the graph
+        for (int j = 0; j < node_num; j++)
         {
             int x;
             int y;
-
+            
             fscanf(graph_data, "%i %i", &x, &y);
-            node_list[i] = {x,y};            
+
+            node_list[j] = {x,y}; // assign node x and y data in the node list
         }
 
-        struct Node path[node_num];
-        int node_distance[node_num];
-        for (int i = 0; i < node_num ; i++)
+        // generate table of the weight of each node connection
+        for (int j = 0; j < node_num; j++)
         {
-            for (int j = 0; j < node_num; i++)
+            for (int k = 0; k < node_num; k++)
             {
-                if (i == j)
+                node_array[j][k] = distance(node_list[j], node_list[k]);
+            }
+        }
+
+        // find node connections with the least weight to generate a mst
+        int weight = 0;
+        for(int j = 0; j < node_num; j++)
+        {
+            int min = node_array[j][0];
+            for (int k = 1; k < node_num; k++)
+            {
+                // check if the node is refering to itself
+                if (j != k)
                 {
-                    
-                }
-                else
-                {
-                    node_distance[j] = distance(node_list[i], node_list[j]);
+                    // check if the min is greater then the current distance
+                    if(min >= node_array[j][k])
+                    {
+                        min = node_array[j][k]; // update the min
+                    }
                 }
             }
-            int min = get_min(node_distance);
-            cout << "(" << node_list[i].x << "," << node_list[i].y << ") -->"
-                 << "(" << node_list[min].x << "," << node_list[min].y << ")"
-                 << endl;
-                        
+                weight += min; // add least weight to total weight of mst
         }
-                
 
+        cout << "MST weight: " << weight << endl << endl;
     }
-    
+
     fclose(graph_data);
 
     return 0;
